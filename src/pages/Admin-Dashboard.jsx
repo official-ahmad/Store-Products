@@ -49,7 +49,7 @@ const AdminDashboard = () => {
     <div className="flex min-h-screen bg-gray-100 font-sans">
       <div className="w-64 bg-gray-800 text-white p-6 flex flex-col fixed h-full">
         <h2 className="text-2xl font-bold text-indigo-400 text-center mb-10">
-          Admin Panel
+          Admin Dashboard
         </h2>
 
         <nav className="flex flex-col gap-4 flex-grow">
