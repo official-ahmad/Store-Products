@@ -11,7 +11,8 @@ function ProductList({ addToCart, selectedCategory, toggleSidebar }) {
   const fetchProducts = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8000/api/admin/products/all",
+        // "http://localhost:8000/api/admin/products/all",
+        "https://store-backend-7eig.onrender.com/api/admin/products/all",
       );
       setProducts(res.data);
       setLoading(false);

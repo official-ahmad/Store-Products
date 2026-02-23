@@ -212,13 +212,15 @@ const ProductModal = ({ mode, initialData, onClose, onSuccess }) => {
       };
       if (isEdit) {
         await axios.put(
-          `http://localhost:8000/api/admin/products/update/${initialData._id}`,
+          // `http://localhost:8000/api/admin/products/update/${initialData._id}`,
+          `https://store-backend-7eig.onrender.com/api/admin/products/update/${initialData._id}`,
           payload,
         );
         toast.success("Product updated!", { autoClose: 1000 });
       } else {
         await axios.post(
-          "http://localhost:8000/api/admin/products/add",
+          // "http://localhost:8000/api/admin/products/add",
+          "https://store-backend-7eig.onrender.com/api/admin/products/add",
           payload,
         );
         toast.success("Product added!", { autoClose: 1000 });
@@ -1842,7 +1844,8 @@ const AdminDashboard = () => {
   const fetchProducts = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:8000/api/admin/products/all",
+        // "http://localhost:8000/api/admin/products/all",
+        "https://store-backend-7eig.onrender.com/api/admin/products/all",
       );
       setProducts(res.data);
     } catch {
@@ -1867,11 +1870,12 @@ const AdminDashboard = () => {
       if (result.isConfirmed) {
         try {
           await axios.delete(
-            `http://localhost:8000/api/admin/products/delete/${id}`,
+            // `http://localhost:8000/api/admin/products/delete/${id}`,
+            `https://store-backend-7eig.onrender.com/api/admin/products/delete/${id}`,
           );
           toast.error("Product deleted!", { autoClose: 1000 });
           fetchProducts();
-        } catch {
+        } catch (err) {
           toast.error("Cannot delete product!");
         }
       }

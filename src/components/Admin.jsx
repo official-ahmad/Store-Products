@@ -21,7 +21,8 @@ const Login = () => {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:8000/api/admins/login",
+        // "http://localhost:8000/api/admins/login",
+        "https://store-backend-7eig.onrender.com/api/admins/login",
         {
           email: username,
           password: password,
