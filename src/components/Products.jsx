@@ -1,26 +1,30 @@
 import { useState, useEffect } from "react";
 import Input from "./Input";
 import Cart from "./Cart";
+import axios from "axios";
 
 function ProductList({ addToCart, selectedCategory, toggleSidebar }) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:8000/api/admin/products/all",
+      );
+      setProducts(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Fetch error:", err);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch("https://fakestoreapi.com/products")
-      .then((res) => res.json())
-      .then((data) => {
-        setProducts(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Fetch error:", err);
-        setLoading(false);
-      });
+    fetchProducts();
   }, []);
 
-  // Filter logic: Pehle Category check hogi, phir Search
   const filteredProducts = products.filter((item) => {
     const matchesCategory =
       selectedCategory === "All" || item.category === selectedCategory;
@@ -40,11 +44,9 @@ function ProductList({ addToCart, selectedCategory, toggleSidebar }) {
   return (
     <div className="bg-gray-50 min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        {/* Header Section */}
-        {/* Header Section */}
+     
         <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 w-full">
-          {/* Left Side: Bars Button + Title */}
+        
           <div className="flex items-center gap-4">
             <button
               onClick={toggleSidebar}
@@ -70,7 +72,6 @@ function ProductList({ addToCart, selectedCategory, toggleSidebar }) {
             </h2>
           </div>
 
-          {/* Right Side: Search Bar - Forced to extreme right */}
           <div className="w-full md:w-auto md:flex-1 flex justify-center md:justify-end">
             <div className="w-full max-w-xs md:max-w-none md:w-80">
               <Input setSearchTerm={setSearchTerm} />

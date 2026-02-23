@@ -1,4 +1,6 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Sidebar = ({
   setSelectedCategory,
@@ -6,6 +8,8 @@ const Sidebar = ({
   isOpen,
   setIsOpen,
 }) => {
+  const navigate = useNavigate();
+
   const categories = [
     "All",
     "electronics",
@@ -16,14 +20,12 @@ const Sidebar = ({
 
   return (
     <>
-      {/* Overlay: Jab Sidebar khule toh baqi screen halki dark ho jaye */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity"
           onClick={() => setIsOpen(false)}
         ></div>
       )}
-
       <aside
         className={`
         fixed top-0 left-0 z-50 h-full w-72 bg-white shadow-2xl p-6
@@ -56,13 +58,14 @@ const Sidebar = ({
           </button>
         </div>
 
+        {/* Categories */}
         <div className="flex flex-col gap-2">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => {
                 setSelectedCategory(cat);
-                setIsOpen(false); // Category select hote hi band ho jaye
+                setIsOpen(false);
               }}
               className={`text-left px-5 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 capitalize ${
                 selectedCategory === cat
@@ -74,6 +77,20 @@ const Sidebar = ({
             </button>
           ))}
         </div>
+
+        {/* Divider */}
+        <div className="my-6 border-t border-gray-100"></div>
+
+        {/* Admin Dashboard Route */}
+        <button
+          onClick={() => {
+            navigate("/admin-dashboard");
+            setIsOpen(false);
+          }}
+          className="w-full text-left px-5 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 text-gray-500 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2"
+        >
+          <span>Admin Dashboard</span>
+        </button>
       </aside>
     </>
   );
