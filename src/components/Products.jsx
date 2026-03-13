@@ -45,9 +45,7 @@ function ProductList({ addToCart, selectedCategory, toggleSidebar }) {
   return (
     <div className="bg-gray-50 min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-     
         <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 w-full">
-        
           <div className="flex items-center gap-4">
             <button
               onClick={toggleSidebar}
@@ -85,7 +83,7 @@ function ProductList({ addToCart, selectedCategory, toggleSidebar }) {
           {filteredProducts.length > 0 ? (
             filteredProducts.map((item) => (
               <div
-                key={item.id}
+                key={item._id}
                 className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden border border-gray-100"
               >
                 <div className="relative h-56 md:h-64 p-6 bg-white overflow-hidden">

@@ -3,7 +3,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { FaLock, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
 
 const Login = () => {
   const [username, setUsername] = useState("");

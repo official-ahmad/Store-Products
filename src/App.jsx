@@ -5,15 +5,14 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import "./App.css";
+import "./index.css";
 import Admin from "./components/Admin";
 import Navbar from "./components/Navbar";
 import Product from "./components/Products";
 import Footer from "./components/Footer";
 import Sidebar from "./components/Sidebar";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import toast from "react-hot-toast";
 import AdminDashboard from "./pages/Admin-Dashboard";
 
 function App() {
@@ -30,7 +29,7 @@ function App() {
   }, [cart]);
 
   const addToCart = (product) => {
-    const isExist = cart.find((item) => item.id === product.id);
+    const isExist = cart.find((item) => item._id === product._id);
     if (isExist) {
       toast.error("Item already in cart!");
     } else {
@@ -61,7 +60,6 @@ function App() {
                   cartCount={cart.length}
                   cartItems={cart}
                   clearCart={clearCart}
-                  toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
                 />
                 <div className="flex container mx-auto">
                   <Sidebar

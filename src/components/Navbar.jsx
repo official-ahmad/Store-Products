@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-const Navbar = ({ cartCount, cartItems = [], clearCart, setSearchTerm }) => {
+const Navbar = ({ cartCount, cartItems = [], clearCart }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
