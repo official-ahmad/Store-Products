@@ -11,9 +11,12 @@ import Navbar from "./components/Navbar";
 import Product from "./components/Products";
 import Footer from "./components/Footer";
 import Sidebar from "./components/Sidebar";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import AdminDashboard from "./pages/Admin-Dashboard";
+import UserAuth from "./pages/UserAuth";
+import UserDashboard from "./pages/UserDashboard";
+import { ToastContainer, toast } from "react-toastify";
+import Swal from "sweetalert2";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const [cart, setCart] = useState(() => {
@@ -29,18 +32,68 @@ function App() {
   }, [cart]);
 
   const addToCart = (product) => {
-    const isExist = cart.find((item) => item._id === product._id);
-    if (isExist) {
-      toast.error("Item already in cart!");
+    const existing = cart.find((item) => item._id === product._id);
+    if (existing) {
+      setCart(
+        cart.map((item) =>
+          item._id === product._id
+            ? { ...item, quantity: (item.quantity || 1) + 1 }
+            : item,
+        ),
+      );
+      toast.success("Quantity updated!", { autoClose: 800 });
     } else {
-      setCart([...cart, product]);
-      toast.success(`${product.title.slice(0, 20)}... added!`);
+      setCart([...cart, { ...product, quantity: 1 }]);
+      toast.success(`${product.title.slice(0, 20)}... added!`, {
+        autoClose: 800,
+      });
+    }
+  };
+
+  const removeFromCart = (productId) => {
+    setCart(cart.filter((item) => item._id !== productId));
+    toast.info("Item removed from cart", { autoClose: 800 });
+  };
+
+  const updateQuantity = (productId, newQuantity) => {
+    if (newQuantity <= 0) {
+      removeFromCart(productId);
+    } else {
+      setCart(
+        cart.map((item) =>
+          item._id === productId ? { ...item, quantity: newQuantity } : item,
+        ),
+      );
     }
   };
 
   const clearCart = () => {
     setCart([]);
-    toast.error("Cart cleared!");
+    toast.warning("Cart cleared!", { autoClose: 800 });
+  };
+
+  const handleCheckout = () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      Swal.fire({
+        title: "Login Required",
+        text: "Please login or create an account to proceed with checkout",
+        icon: "info",
+        background: "#fff",
+        color: "#333",
+        showCancelButton: true,
+        confirmButtonColor: "#3b82f6",
+        cancelButtonColor: "#666",
+        confirmButtonText: "Login/Sign Up",
+        cancelButtonText: "Continue Shopping",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = "/user-login";
+        }
+      });
+    } else {
+      window.location.href = "/user-dashboard";
+    }
   };
 
   return (
@@ -49,17 +102,18 @@ function App() {
         <ToastContainer />
 
         <Routes>
-          <Route path="/" element={<Admin />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-
+          {/* Main Store */}
           <Route
-            path="/store"
+            path="/"
             element={
               <>
                 <Navbar
                   cartCount={cart.length}
                   cartItems={cart}
                   clearCart={clearCart}
+                  removeFromCart={removeFromCart}
+                  updateQuantity={updateQuantity}
+                  onCheckout={handleCheckout}
                 />
                 <div className="flex container mx-auto">
                   <Sidebar
@@ -80,6 +134,14 @@ function App() {
               </>
             }
           />
+
+          {/* User Routes */}
+          <Route path="/user-login" element={<UserAuth />} />
+          <Route path="/user-dashboard" element={<UserDashboard />} />
+
+          {/* Admin Routes (Hidden) */}
+          <Route path="/admin-login" element={<Admin />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

@@ -17,11 +17,14 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (!username || !password) {
+      toast.error("Please enter email and password");
+      return;
+    }
     setIsLoading(true);
     try {
       const response = await axios.post(
-        // "http://localhost:8000/api/admins/login",
-        "https://store-backend-7eig.onrender.com/api/admins/login",
+        "http://localhost:8000/api/admins/login",
         {
           email: username,
           password: password,
@@ -34,7 +37,11 @@ const Login = () => {
         navigate("/admin-dashboard");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message);
+      if (!error.response) {
+        toast.error("Network error! Make sure backend is running");
+      } else {
+        toast.error(error.response?.data?.message || "Login failed");
+      }
     } finally {
       setIsLoading(false);
     }

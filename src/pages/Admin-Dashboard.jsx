@@ -15,7 +15,8 @@ import {
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
-const API = "https://store-backend-7eig.onrender.com/api/admin/products";
+// const API = "https://store-backend-7eig.onrender.com/api/admin/products";
+const API = "http://localhost:8000/api/admin/products";
 const authHeader = () => ({
   headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
 });
@@ -151,7 +152,7 @@ const ProductModal = ({ mode, initialData, onClose, onSuccess }) => {
     }
   };
 
-  const Field = ({ label, field, type = "text", placeholder, span }) => (
+  const Field = React.memo(({ label, field, type = "text", placeholder, span }) => (
     <div style={{ gridColumn: span === 2 ? "1/-1" : undefined }}>
       <label className="modal-label">{label}</label>
       {field === "description" ? (
@@ -173,7 +174,7 @@ const ProductModal = ({ mode, initialData, onClose, onSuccess }) => {
       )}
       {errors[field] && <span className="modal-err">{errors[field]}</span>}
     </div>
-  );
+  ));
 
   return (
     <div
@@ -257,6 +258,8 @@ const ProductModal = ({ mode, initialData, onClose, onSuccess }) => {
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeNav, setActiveNav] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -264,6 +267,8 @@ const AdminDashboard = () => {
   const [mounted, setMounted] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [categoryForm, setCategoryForm] = useState({ name: "", description: "" });
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -274,6 +279,8 @@ const AdminDashboard = () => {
     }
     setMounted(true);
     fetchProducts();
+    fetchOrders();
+    fetchCategories();
     const clock = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(clock);
   }, [navigate]);
@@ -286,6 +293,24 @@ const AdminDashboard = () => {
       toast.error("Failed to fetch products!");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/orders/all");
+      setOrders(res.data);
+    } catch (err) {
+      console.error("Orders fetch error:", err);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/categories/all");
+      setCategories(res.data);
+    } catch (err) {
+      console.error("Categories fetch error:", err);
     }
   };
 
@@ -336,9 +361,6 @@ const AdminDashboard = () => {
       p.category?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const categories = [
-    ...new Set(products.map((p) => p.category).filter(Boolean)),
-  ];
   const avgPrice = products.length
     ? (products.reduce((s, p) => s + p.price, 0) / products.length).toFixed(2)
     : "0.00";
@@ -533,6 +555,45 @@ const AdminDashboard = () => {
             onClick={() => setActiveNav("products")}
           >
             <FaBoxOpen style={{ fontSize: 13 }} /> Products
+          </button>
+          <button
+            className={`nav-btn ${activeNav === "orders" ? "active" : ""}`}
+            onClick={() => setActiveNav("orders")}
+          >
+            <svg
+              style={{ fontSize: 13, width: 13, height: 13 }}
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M9 2C7.89543 2 7 2.89543 7 4V20C7 21.1046 7.89543 22 9 22H15C16.1046 22 17 21.1046 17 20V4C17 2.89543 16.1046 2 15 2H9ZM9 4H15V20H9V4Z" />
+            </svg>{" "}
+            Orders
+          </button>
+          <button
+            className={`nav-btn ${activeNav === "categories" ? "active" : ""}`}
+            onClick={() => setActiveNav("categories")}
+          >
+            <svg
+              style={{ fontSize: 13, width: 13, height: 13 }}
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M3 3H11V11H3V3ZM13 3H21V11H13V3ZM3 13H11V21H3V13ZM13 13H21V21H13V13Z" />
+            </svg>{" "}
+            Categories
+          </button>
+          <button
+            className={`nav-btn ${activeNav === "analytics" ? "active" : ""}`}
+            onClick={() => setActiveNav("analytics")}
+          >
+            <svg
+              style={{ fontSize: 13, width: 13, height: 13 }}
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M3 13h2v8H3v-8zm4-8h2v16H7V5zm4-2h2v18h-2V3zm4 4h2v14h-2V7zm4-2h2v16h-2V5z" />
+            </svg>{" "}
+            Analytics
           </button>
         </nav>
 
@@ -805,8 +866,303 @@ const AdminDashboard = () => {
               </div>
             </div>
           )}
+
+          {activeNav === "orders" && (
+            <div>
+              <div className="page-header">
+                <div>
+                  <div className="page-title">Orders</div>
+                  <div className="page-sub">
+                    {orders.length} total orders
+                  </div>
+                </div>
+              </div>
+
+              <div className="table-card">
+                <div className="table-head">
+                  <div className="table-title">All Orders</div>
+                  <span className="table-badge">{orders.length} total</span>
+                </div>
+                {loading ? (
+                  <div className="loader">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                ) : orders.length === 0 ? (
+                  <div className="empty-state">No orders yet.</div>
+                ) : (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Order Number</th>
+                        <th className="hide-sm">Customer</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th className="hide-sm">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map((o) => (
+                        <tr key={o._id}>
+                          <td>
+                            <span className="prod-name">{o.orderNumber}</span>
+                          </td>
+                          <td className="hide-sm">
+                            <div style={{ fontSize: "12px" }}>
+                              <div className="prod-name">{o.customerName}</div>
+                              <div className="prod-id">{o.customerEmail}</div>
+                            </div>
+                          </td>
+                          <td>
+                            <span className="price-val">${o.totalAmount}</span>
+                          </td>
+                          <td>
+                            <span className="cat-tag" style={{ textTransform: "capitalize", background: o.status === "delivered" ? "rgba(16,185,129,0.12)" : "rgba(245,158,11,0.12)" }}>
+                              {o.status}
+                            </span>
+                          </td>
+                          <td className="hide-sm">
+                            <span style={{ fontSize: "11px", color: "var(--mu)" }}>
+                              {new Date(o.createdAt).toLocaleDateString()}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeNav === "categories" && (
+            <div>
+              <div className="page-header">
+                <div>
+                  <div className="page-title">Categories</div>
+                  <div className="page-sub">
+                    {categories.length} total categories
+                  </div>
+                </div>
+                <button
+                  className="add-btn"
+                  onClick={() => {
+                    setCategoryForm({ name: "", description: "" });
+                    setShowCategoryModal(true);
+                  }}
+                >
+                  <FaPlus size={10} /> Add Category
+                </button>
+              </div>
+
+              <div className="stats-grid">
+                {categories.map((cat) => (
+                  <div key={cat._id} className="stat-card" style={{ position: "relative" }}>
+                    <div style={{ position: "absolute", top: 10, right: 10, display: "flex", gap: 4 }}>
+                      <button
+                        className="action-btn edit"
+                        title="Edit"
+                        onClick={() => {
+                          setCategoryForm({ name: cat.name, description: cat.description });
+                          setShowCategoryModal(true);
+                        }}
+                      >
+                        <FaEdit />
+                      </button>
+                      <button
+                        className="action-btn del"
+                        title="Delete"
+                        onClick={async () => {
+                          if (window.confirm(`Delete "${cat.name}"?`)) {
+                            try {
+                              await axios.delete(
+                                `http://localhost:8000/api/categories/delete/${cat._id}`,
+                                authHeader(),
+                              );
+                              toast.success("Category deleted!");
+                              fetchCategories();
+                            } catch (err) {
+                              toast.error("Error deleting category");
+                            }
+                          }
+                        }}
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                    <div className="stat-label">{cat.name}</div>
+                    <div style={{ fontSize: "12px", color: "var(--mu2)", marginTop: 8, lineHeight: 1.4 }}>
+                      {cat.description || "No description"}
+                    </div>
+                    <div style={{ marginTop: 12, fontSize: "11px", color: "var(--mu)", display: "flex", gap: 8 }}>
+                      <span>📅 {new Date(cat.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {categories.length === 0 && (
+                <div className="empty-state">No categories yet. Create one!</div>
+              )}
+            </div>
+          )}
+
+          {activeNav === "analytics" && (
+            <div>
+              <div className="page-header">
+                <div>
+                  <div className="page-title">Analytics</div>
+                  <div className="page-sub">Store performance overview</div>
+                </div>
+              </div>
+
+              <div className="stats-grid">
+                {[
+                  {
+                    label: "Total Revenue",
+                    value: `$${(orders.reduce((s, o) => s + o.totalAmount, 0)).toFixed(2)}`,
+                    color: "#10b981",
+                  },
+                  {
+                    label: "Total Orders",
+                    value: orders.length,
+                    color: "#3b82f6",
+                  },
+                  {
+                    label: "Avg Order Value",
+                    value: orders.length > 0 ? `$${(orders.reduce((s, o) => s + o.totalAmount, 0) / orders.length).toFixed(2)}` : "$0",
+                    color: "#f59e0b",
+                  },
+                  {
+                    label: "Pending Orders",
+                    value: orders.filter(o => o.status === "pending").length,
+                    color: "#6366f1",
+                  },
+                ].map(({ label, value, color }) => (
+                  <div key={label} className="stat-card">
+                    <div className="stat-label">{label}</div>
+                    <div className="stat-val">{value}</div>
+                    <div style={{ marginTop: 12, height: 30, background: color, borderRadius: 6, opacity: 0.15 }} />
+                  </div>
+                ))}
+              </div>
+
+              <div className="table-card" style={{ marginTop: 20 }}>
+                <div className="table-head">
+                  <div className="table-title">Recent Orders</div>
+                  <span className="table-badge">{orders.length} total</span>
+                </div>
+                {orders.slice(0, 10).length === 0 ? (
+                  <div className="empty-state">No orders data available</div>
+                ) : (
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Order</th>
+                        <th className="hide-sm">Customer</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.slice(0, 10).map((o) => (
+                        <tr key={o._id}>
+                          <td>
+                            <span className="prod-id">{o.orderNumber}</span>
+                          </td>
+                          <td className="hide-sm">
+                            <span className="prod-name">{o.customerName}</span>
+                          </td>
+                          <td>
+                            <span className="price-val">${o.totalAmount}</span>
+                          </td>
+                          <td>
+                            <span className="cat-tag" style={{ textTransform: "capitalize" }}>
+                              {o.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </main>
+
+      {showCategoryModal && (
+        <div
+          className="modal-backdrop"
+          onClick={(e) => e.target === e.currentTarget && setShowCategoryModal(false)}
+        >
+          <div className="modal-box">
+            <div className="modal-head">
+              <span className="modal-title">Add/Edit Category</span>
+              <button className="modal-close" onClick={() => setShowCategoryModal(false)}>
+                <FaTimes />
+              </button>
+            </div>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!categoryForm.name) {
+                  toast.error("Category name is required");
+                  return;
+                }
+                try {
+                  await axios.post(
+                    "http://localhost:8000/api/categories/create",
+                    categoryForm,
+                    authHeader(),
+                  );
+                  toast.success("Category created!");
+                  fetchCategories();
+                  setShowCategoryModal(false);
+                } catch (err) {
+                  toast.error(err.response?.data?.message || "Error creating category");
+                }
+              }}
+              className="modal-body"
+            >
+              <div className="modal-grid">
+                <div style={{ gridColumn: "1/-1" }}>
+                  <label className="modal-label">Category Name</label>
+                  <input
+                    className="modal-input"
+                    placeholder="e.g. Electronics"
+                    value={categoryForm.name}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                  />
+                </div>
+                <div style={{ gridColumn: "1/-1" }}>
+                  <label className="modal-label">Description</label>
+                  <textarea
+                    className="modal-input"
+                    placeholder="Category description..."
+                    rows={3}
+                    value={categoryForm.description}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => setShowCategoryModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary">
+                  Create Category
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {showAddModal && (
         <ProductModal

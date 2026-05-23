@@ -10,14 +10,21 @@ function ProductList({ addToCart, selectedCategory, toggleSidebar }) {
 
   const fetchProducts = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(
-        // "http://localhost:8000/api/admin/products/all",
-        "https://store-backend-7eig.onrender.com/api/admin/products/all",
+        "http://localhost:8000/api/admin/products/all",
       );
       setProducts(res.data);
-      setLoading(false);
     } catch (err) {
       console.error("Fetch error:", err);
+      if (!err.response) {
+        alert("Network error! Make sure backend is running on localhost:8000");
+      } else {
+        alert(
+          `Error: ${err.response.status} - ${err.response.data?.message || "Failed to fetch products"}`,
+        );
+      }
+    } finally {
       setLoading(false);
     }
   };

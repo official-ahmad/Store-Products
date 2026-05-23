@@ -9,7 +9,14 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-const Navbar = ({ cartCount, cartItems = [], clearCart }) => {
+const Navbar = ({
+  cartCount,
+  cartItems = [],
+  clearCart,
+  removeFromCart,
+  updateQuantity,
+  onCheckout,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
@@ -291,16 +298,6 @@ const Navbar = ({ cartCount, cartItems = [], clearCart }) => {
             <a href="#" className="nb-link">
               <FaBolt /> Flash Sales
             </a>
-            <div className="nb-divider" />
-            <button
-              className="nb-link nb-link-admin"
-              onClick={() => {
-                toast.info("Directed to Admin...", { autoClose: 1000 });
-                setTimeout(() => navigate("/admin-dashboard"), 1000);
-              }}
-            >
-              <FaStore /> Admin Dashboard
-            </button>
           </div>
 
           {/* Right: Cart */}
@@ -348,12 +345,121 @@ const Navbar = ({ cartCount, cartItems = [], clearCart }) => {
                 <div className="nb-dd-body">
                   {cartCount > 0 ? (
                     <>
-                      <div className="nb-dd-label">Categories in cart</div>
-                      <div className="nb-dd-cats">
-                        {categories.map((cat, i) => (
-                          <span key={i} className="nb-dd-cat">
-                            {cat}
-                          </span>
+                      <div className="nb-dd-label">Items in cart</div>
+                      <div
+                        style={{
+                          maxHeight: "240px",
+                          overflowY: "auto",
+                          marginBottom: "12px",
+                        }}
+                      >
+                        {cartItems.map((item) => (
+                          <div
+                            key={item._id}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              padding: "8px",
+                              background: "rgba(59, 130, 246, 0.04)",
+                              borderRadius: "6px",
+                              marginBottom: "6px",
+                              fontSize: "12px",
+                            }}
+                          >
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div
+                                style={{
+                                  fontWeight: 600,
+                                  color: "#e2e8f0",
+                                  textOverflow: "ellipsis",
+                                  overflow: "hidden",
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {item.title?.slice(0, 20)}...
+                              </div>
+                              <div
+                                style={{ color: "#94a3b8", fontSize: "11px" }}
+                              >
+                                ${item.price} x {item.quantity || 1}
+                              </div>
+                            </div>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "4px",
+                                alignItems: "center",
+                              }}
+                            >
+                              <button
+                                onClick={() =>
+                                  updateQuantity(
+                                    item._id,
+                                    (item.quantity || 1) - 1,
+                                  )
+                                }
+                                style={{
+                                  width: "20px",
+                                  height: "20px",
+                                  background: "#ef4444",
+                                  color: "#fff",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  fontSize: "10px",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                −
+                              </button>
+                              <span
+                                style={{
+                                  width: "18px",
+                                  textAlign: "center",
+                                  color: "#e2e8f0",
+                                }}
+                              >
+                                {item.quantity || 1}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  updateQuantity(
+                                    item._id,
+                                    (item.quantity || 1) + 1,
+                                  )
+                                }
+                                style={{
+                                  width: "20px",
+                                  height: "20px",
+                                  background: "#10b981",
+                                  color: "#fff",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  fontSize: "10px",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                +
+                              </button>
+                              <button
+                                onClick={() => removeFromCart(item._id)}
+                                style={{
+                                  width: "20px",
+                                  height: "20px",
+                                  background: "#ef4444",
+                                  color: "#fff",
+                                  border: "none",
+                                  borderRadius: "4px",
+                                  cursor: "pointer",
+                                  fontSize: "10px",
+                                }}
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
                         ))}
                       </div>
                       <button
@@ -363,7 +469,31 @@ const Navbar = ({ cartCount, cartItems = [], clearCart }) => {
                           setIsOpen(false);
                         }}
                       >
-                        <FaTimes size={11} /> Clear Cart
+                        <FaTimes size={11} /> Clear All
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsOpen(false);
+                          onCheckout();
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "11px",
+                          borderRadius: "12px",
+                          border: "none",
+                          background: "#3b82f6",
+                          color: "#fff",
+                          fontFamily: "DM Sans",
+                          fontSize: "13px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          marginTop: "8px",
+                          transition: "all 0.18s",
+                        }}
+                        onMouseEnter={(e) => (e.target.style.background = "#2563eb")}
+                        onMouseLeave={(e) => (e.target.style.background = "#3b82f6")}
+                      >
+                        💳 Checkout
                       </button>
                     </>
                   ) : (
